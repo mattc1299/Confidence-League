@@ -1,3 +1,3 @@
 # Confidence-League
 
-#data analysis and dashbaord for league
+data analysis and dashbaord for league
