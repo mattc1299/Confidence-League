@@ -11,16 +11,11 @@ import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-#cd Documents\Python Scripts
-#streamlit run Streamlit2.py
+#cd Documents\GitHub\Confidence-League
+#streamlit run App.py
 
 
-# def SurveyFn():
-
-
-
-
-df = pd.read_csv('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Matchups Wk1.csv')
+df = pd.read_csv('Matchups Wk1.csv')
 Matchups = df['Wk1'].tolist()
 names = ['Justice', 'Brian', 'Gage']
 
