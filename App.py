@@ -7,10 +7,8 @@ Created on Thu Apr 18 15:36:38 2024
 
 import streamlit as st
 from streamlit_option_menu import option_menu
-import time
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 #cd Documents\GitHub\Confidence-League
 #streamlit run App.py
 
@@ -108,7 +106,7 @@ if selected == 'Survey':
 elif selected=='Reset':
     # selected='Survey'
     # st.write('Reloading...')
-    st.write('The devs of this platform are monkey brianed retards who dont know how to write a delet function so this has to be done in two steps')
+    st.write('this has to be done in two steps')
     if st.button('Reload'):
         selected='Survey'
         st.rerun()
