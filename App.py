@@ -16,15 +16,20 @@ import matplotlib.pyplot as plt
 
 
 df = pd.read_csv('Matchups Wk1.csv')
+userdf = pd.read_csv('Users.csv')
+users={}
+for i in range(0,len(userdf)):
+    users[userdf.iloc[i,0]]=userdf.ilov[i,1]
+names = []
+for key in users.keys():
+    names.append(key)
 Matchups = df['Wk1'].tolist()
-names = ['Justice', 'Brian', 'Gage']
+
 
 selected = option_menu(None,
                         ['Survey', 'Data'], 
         icons=['house', 'award'], menu_icon="cast", default_index=0,
                         orientation = 'horizontal')
-
-    
 st.title('Confidence League Weekly Selections')
 with st.sidebar:
     st.header('INSTRUCTIONS')
