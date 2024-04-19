@@ -17,7 +17,7 @@ df = pd.read_csv('Matchups Wk1.csv')
 userdf = pd.read_csv('Users.csv')
 users={}
 for i in range(0,len(userdf)):
-    users[userdf.iloc[i,0]]=userdf.ilov[i,1]
+    users[userdf.iloc[i,0]]=userdf.iloc[i,1]
 names = []
 for key in users.keys():
     names.append(key)
