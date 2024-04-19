@@ -9,9 +9,23 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
 import numpy as np
+from datetime import date
 #cd Documents\GitHub\Confidence-League
 #streamlit run App.py
+st.markdown(
+    """
+<style>
+    .dataframe-container {
+        text-align: center;
+}
+</style>
+""",
+    unsafe_allow_html=True
+) #this does not work
 
+startDate = date(2024,4,1)
+today=date.today()
+week=(today-startDate).days//7
 
 df = pd.read_csv('Matchups Wk1.csv')
 userdf = pd.read_csv('Users.csv')
@@ -21,54 +35,49 @@ for i in range(0,len(userdf)):
 names = []
 for key in users.keys():
     names.append(key)
-Matchups = df['Wk1'].tolist()
+matchups = df['Wk1'].tolist()
 
 
 selected = option_menu(None,
-                        ['Survey', 'Data'], 
+                        ['Survey', 'Dashboard'], 
         icons=['house', 'award'], menu_icon="cast", default_index=0,
                         orientation = 'horizontal')
-st.title('Confidence League Weekly Selections')
+if selected=='Survey' or selected=='Reset':
+    sidebarState='Survey'
+elif selected=='Dashboard':
+    sidebarState='Dashboard'
+
+
 with st.sidebar:
-    st.header('INSTRUCTIONS')
-    st.write('Select the winner of each matchup. Then rank each one by how confident you are they will win, 16 being the most confident and 1 being the least.')
-    st.selectbox('Name', options=names, key='name', index=None)
-if st.sidebar.button('Reset Confidences'):
-    # st.session_state.questions = Matchups #["Question 1", "Question 2", "Question 3", "Question 4", "Question 5"]
-    # st.session_state.answers = {}
-    # st.session_state.winners = {}
-    # st.session_state.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15,16]
-    # for i, question in enumerate(st.session_state.questions):
-    #     st.write(f'Game {i+1} - {question}')
-    #     winner = st.selectbox('', options=[''], key=(i+1)*2-1, index=None)
-    # placeholder=st.empty()
-    # placeholder.empty()
-    
-    for key in st.session_state.keys():
-        if key=='name':
-            pass
-        else:
-            del st.session_state[key]
-    selected = 'Reset'
+    if sidebarState=='Survey':    
+        st.header('INSTRUCTIONS')
+        st.write('Select the winner of each matchup. Then rank each one by how confident you are they will win, 16 being the most confident and 1 being the least.')
+        name = st.selectbox('Name', options=names, key='name', index=None)
+        code = st.text_input('User Code',max_chars=3,key='Code')
+        if st.sidebar.button('Reset Confidences'):
+            for key in st.session_state.keys():
+                if key=='name':
+                    pass
+                else:
+                    del st.session_state[key]
+            selected = 'Reset'
+        
+    elif sidebarState=='Dashboard':
+        st.header('DASHBOARD')
+        st.write('view different stats about the league')
+        st.selectbox('Name', options=names, key='name', index=None)
 
 
 if selected == 'Survey':            
+    st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>Week {week} Selections</h1>", unsafe_allow_html=True)
     
     if 'questions' not in st.session_state:
-        st.session_state.questions = Matchups
+        st.session_state.questions = matchups
         st.session_state.answers = {}
         st.session_state.winners = {}
         st.session_state.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15,16]
     
     for i, question in enumerate(st.session_state.questions):
-        #question=str(question)
-        # winner_placeholder = st.empty()
-        # if len(st.session_state.winners)<1:
-        #     with st.empty():
-        #         winner = st.selectbox(f'Game {i+1} - {question}', options=question.split('/'), key=(i+1)*2-1, index=None)
-        # else:
-        #     winner = st.selectbox(f'Game {i+1} - {question}', options=question.split('/'), key=(i+1)*2-1, index=None)
-    
         winner = st.selectbox(f'Game {i+1} - {question}', options=question.split('/'), key=(i+1)*2-1, index=None)
         if winner:
             st.session_state.winners[question] = winner
@@ -97,29 +106,37 @@ if selected == 'Survey':
                 st.session_state.numbers.remove(selected_number)
         
         st.markdown("""<hr style="border-width: 4px;" />""", unsafe_allow_html=True)
-            # st.rerun()
-    st.write(st.session_state.answers)
-    st.write(st.session_state.winners)
-
+     
+        
+    st.markdown("<h1 style='text-align: center; color: white; font-size: 40px;'>Selections</h1>", unsafe_allow_html=True)
+    displayData = pd.DataFrame(columns=['Winner','Confidence'], index=matchups)
+    displayData = displayData.rename_axis('Matchup')
+    for key,value in st.session_state.winners.items():
+        displayData.loc[key,'Winner'] = value
+    for key,value in st.session_state.answers.items():
+        displayData.loc[key,'Confidence'] = value
+    disp1=displayData.head(8)
+    disp2=displayData.tail(-8)
+    col1,col2=st.columns([1,1])
+    with col1:
+        st.dataframe(disp1, use_container_width=True)
+    with col2:
+        st.dataframe(disp2,use_container_width=True)
+    
+    col1,col2,col3=st.columns([2,1,2])
+    if col2.button('Submit Answers',use_container_width=True):
+        if not name or not code:
+            st.write('Please input user name and code in the sidebar')
+        else:
+            if int(code)==users[name]:
+                st.write('loading')
+            else:
+                st.write('User name and code do not match.')
+    
 
     
 elif selected=='Reset':
-    # selected='Survey'
-    # st.write('Reloading...')
     st.write('this has to be done in two steps')
     if st.button('Reload'):
         selected='Survey'
         st.rerun()
-        
-        
-        
-    
-    # col1, col2 = st.columns([1,1])
-    # with col1:
-    #     if st.button('Yes', key='Yes'):
-    #         selected='Survey'
-    #         st.rerun()
-    # with col2:
-    #     if st.button('No', key='No'):
-    #         selected='Survey'
-            
