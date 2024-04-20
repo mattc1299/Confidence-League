@@ -23,6 +23,19 @@ st.markdown(
     unsafe_allow_html=True
 ) #this does not work
 
+st.markdown(
+    """
+    <style>
+        section[data-testid="stSidebar"] {
+            width: 450px !important; # Set the width to your desired value
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+st.write('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
+st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allow_html=True)
+
 startDate = date(2024,4,1)
 today=date.today()
 week=(today-startDate).days//7
@@ -50,11 +63,20 @@ elif selected=='Dashboard':
 
 with st.sidebar:
     if sidebarState=='Survey':    
-        st.header('INSTRUCTIONS')
-        st.write('Select the winner of each matchup. Then rank each one by how confident you are they will win, 16 being the most confident and 1 being the least.')
+        st.header('How To Score')
+        st.write('''Select the winner of each matchup. Then rank each one by how confident you are they will win, 
+                 the highest number being the most confident. If you are correct, you will earn points corresponding to the ranking you assigned. 
+                 As you make picks, the table at the bottom of the page under 'Selections' will populate.''')
+        st.markdown("""<hr style="border-width: 3px;" />""", unsafe_allow_html=True)
+        st.header('Submitting Selections')
+        st.write('''To submit your results, select your name from the dropdown list, enter your 3 digit code, then hit the 'Submit Answers' button at the bottom of the page. 
+                 This prevents users from entering results under the wrong name. You can resubmit to change your selections as many times as you would like before the week locks on Thursday at 5:00 CT.''')
         name = st.selectbox('Name', options=names, key='name', index=None)
         code = st.text_input('User Code',max_chars=3,key='Code')
-        if st.sidebar.button('Reset Confidences'):
+        st.markdown("""<hr style="border-width: 3px;" />""", unsafe_allow_html=True)
+        st.header('Clearing Selections')
+        st.write('''If you would like to reset all of your selections, you can do so by clicking the button below.  \nNOTES:  \nThis cannot be undone.  \nThis will not effect any previous submissions.''')
+        if st.sidebar.button('Reset Selections'):
             for key in st.session_state.keys():
                 if key=='name':
                     pass
@@ -70,6 +92,7 @@ with st.sidebar:
 
 if selected == 'Survey':            
     st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>Week {week} Selections</h1>", unsafe_allow_html=True)
+    st.markdown("""<hr style="border-width: 4px;" />""", unsafe_allow_html=True)
     
     if 'questions' not in st.session_state:
         st.session_state.questions = matchups
