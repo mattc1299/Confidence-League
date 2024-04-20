@@ -7,6 +7,8 @@ Created on Thu Apr 18 15:36:38 2024
 
 import streamlit as st
 from streamlit_option_menu import option_menu
+from streamlit_custom_notification_box import custom_notification_box as popup
+from streamlit_modal import Modal
 import pandas as pd
 import numpy as np
 from datetime import date
@@ -35,6 +37,23 @@ st.markdown(
 )
 st.write('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
 st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allow_html=True)
+
+# def AlertBox(wht_msg):
+#     styles = {'material-icons':{'color': '#FF0000'},
+#             'text-icon-link-close-container': {'box-shadow': '#3896de 0px 4px'},
+#             'notification-text': {'':''},
+#             'close-button':{'':''},
+#             'link':{'':''}}
+
+#     popup(icon='info', 
+#         textDisplay=wht_msg, 
+#         externalLink='', 
+#         url='#', 
+#         styles=styles, 
+#         key="foo")
+
+
+#----------------------------------------------------------------------------------------------------------------------
 
 startDate = date(2024,4,1)
 today=date.today()
@@ -98,7 +117,7 @@ if selected == 'Survey':
         st.session_state.questions = matchups
         st.session_state.answers = {}
         st.session_state.winners = {}
-        st.session_state.numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,15,16]
+        st.session_state.numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] #need to change to match number of matchups
     
     for i, question in enumerate(st.session_state.questions):
         winner = st.selectbox(f'Game {i+1} - {question}', options=question.split('/'), key=(i+1)*2-1, index=None)
@@ -132,34 +151,41 @@ if selected == 'Survey':
      
         
     st.markdown("<h1 style='text-align: center; color: white; font-size: 40px;'>Selections</h1>", unsafe_allow_html=True)
-    displayData = pd.DataFrame(columns=['Winner','Confidence'], index=matchups)
-    displayData = displayData.rename_axis('Matchup')
+    data = pd.DataFrame(columns=['Winner','Confidence'], index=matchups)
+    data = data.rename_axis('Matchup')
     for key,value in st.session_state.winners.items():
-        displayData.loc[key,'Winner'] = value
+        data.loc[key,'Winner'] = value
     for key,value in st.session_state.answers.items():
-        displayData.loc[key,'Confidence'] = value
-    disp1=displayData.head(8)
-    disp2=displayData.tail(-8)
+        data.loc[key,'Confidence'] = value
+    disp1=data.head(8)
+    disp2=data.tail(-8)
     col1,col2=st.columns([1,1])
     with col1:
         st.dataframe(disp1, use_container_width=True)
     with col2:
         st.dataframe(disp2,use_container_width=True)
     
+    modal = Modal(key='modal', title='Submission Error')
     col1,col2,col3=st.columns([2,1,2])
     if col2.button('Submit Answers',use_container_width=True):
         if not name or not code:
-            st.write('Please input user name and code in the sidebar')
+            modalMessage='Please input user name and code in the sidebar.'
+        elif any(data.iloc[:,0].isnull()) or any(data.iloc[:,1].isnull()):
+            modalMessage='Please make all selections before submitting.'
         else:
             if int(code)==users[name]:
-                st.write('loading')
+
+                modalMessage='Submission Successful!'
             else:
-                st.write('User name and code do not match.')
+                modalMessage='User name and code do not match.'
+        with modal.container():
+            st.markdown(f'{modalMessage}')
     
 
     
 elif selected=='Reset':
-    st.write('this has to be done in two steps')
+    st.write('''Your selections have been cleared.  \\nDue to a bug in the platform software that has not been patched yet, 
+             this needs to be done in two steps. Please hit the 'Reload' button and you will be returned to the selections page.''')
     if st.button('Reload'):
         selected='Survey'
         st.rerun()
