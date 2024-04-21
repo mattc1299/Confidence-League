@@ -35,6 +35,8 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
 st.write('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
 st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allow_html=True)
 
@@ -58,6 +60,10 @@ st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allo
 startDate = date(2024,4,1)
 today=date.today()
 week=(today-startDate).days//7
+seasonWeeks=[]
+for i in range(1,week):
+    seasonWeeks.append(i)
+
 
 df = pd.read_csv('Matchups Wk1.csv')
 userdf = pd.read_csv('Users.csv')
@@ -71,17 +77,19 @@ matchups = df['Wk1'].tolist()
 
 
 selected = option_menu(None,
-                        ['Survey', 'Dashboard'], 
-        icons=['house', 'award'], menu_icon="cast", default_index=0,
+                        ['Selections', 'History', 'Dashboard'], 
+        icons=['file-earmark-arrow-up', 'book', 'bar-chart-line'], menu_icon="cast", default_index=0,
                         orientation = 'horizontal')
-if selected=='Survey' or selected=='Reset':
-    sidebarState='Survey'
+if selected=='Selections' or selected=='Reset':
+    sidebarState='Selections'
+elif selected=='History':
+    sidebarState='History'
 elif selected=='Dashboard':
     sidebarState='Dashboard'
 
 
 with st.sidebar:
-    if sidebarState=='Survey':    
+    if sidebarState=='Selections':    
         st.header('How To Score')
         st.write('''Select the winner of each matchup. Then rank each one by how confident you are they will win, 
                  the highest number being the most confident. If you are correct, you will earn points corresponding to the ranking you assigned. 
@@ -91,25 +99,43 @@ with st.sidebar:
         st.write('''To submit your results, select your name from the dropdown list, enter your 3 digit code, then hit the 'Submit Answers' button at the bottom of the page. 
                  This prevents users from entering results under the wrong name. You can resubmit to change your selections as many times as you would like before the week locks on Thursday at 5:00 CT.''')
         name = st.selectbox('Name', options=names, key='name', index=None)
-        code = st.text_input('User Code',max_chars=3,key='Code')
+        code = st.text_input('User Code',max_chars=3,key='code')
         st.markdown("""<hr style="border-width: 3px;" />""", unsafe_allow_html=True)
         st.header('Clearing Selections')
         st.write('''If you would like to reset all of your selections, you can do so by clicking the button below.  \nNOTES:  \nThis cannot be undone.  \nThis will not effect any previous submissions.''')
         if st.sidebar.button('Reset Selections'):
             for key in st.session_state.keys():
-                if key=='name':
+                if key=='name' or key=='code':
                     pass
                 else:
                     del st.session_state[key]
             selected = 'Reset'
-        
+    elif sidebarState=='History':
+        st.header('Previous Submissions')
+        st.write('''Use this page to view submissions from yourself for this week, or any user from previous weeks.  \nTo 
+                 view other users previous selections, just select their name from the dropdown and the week you want to view.  \nTo 
+                 view your current selections for this week, select your name, enter your code, and select the current week.''')
+        name = st.selectbox('Name', options=names, key='viewName', index=None)
+        code = st.text_input('User Code',max_chars=3,key='code')
+        listWeeks=seasonWeeks
+        currentWeekView=False
+        if code and name:
+            if int(code)==users[name]:
+                listWeeks.append(week)
+                currentWeekView=True
+        viewWeek = st.selectbox('Week',options=listWeeks,key='week',index=None)
+        st.markdown("""<hr style="border-width: 3px;" />""", unsafe_allow_html=True)
+        st.header('Note:')
+        st.write('''You can switch between this page and the selections page freely if you are editing your selections for the week. 
+                  The dropdowns on the selections page might not correctly load the values or appear blank, but your inputs will be retained. 
+                  You can confirm this by checking the table at the bottom of the page.''')
     elif sidebarState=='Dashboard':
         st.header('DASHBOARD')
         st.write('view different stats about the league')
         st.selectbox('Name', options=names, key='name', index=None)
 
 
-if selected == 'Survey':            
+if selected == 'Selections':            
     st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>Week {week} Selections</h1>", unsafe_allow_html=True)
     st.markdown("""<hr style="border-width: 4px;" />""", unsafe_allow_html=True)
     
@@ -117,7 +143,10 @@ if selected == 'Survey':
         st.session_state.questions = matchups
         st.session_state.answers = {}
         st.session_state.winners = {}
-        st.session_state.numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] #need to change to match number of matchups
+        st.session_state.numbers = []
+        for i in range(1,len(matchups)+1):
+            st.session_state.numbers.append(i)
+        # st.session_state.numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] #need to change to match number of matchups
     
     for i, question in enumerate(st.session_state.questions):
         winner = st.selectbox(f'Game {i+1} - {question}', options=question.split('/'), key=(i+1)*2-1, index=None)
@@ -174,7 +203,7 @@ if selected == 'Survey':
             modalMessage='Please make all selections before submitting.'
         else:
             if int(code)==users[name]:
-
+                #save score
                 modalMessage='Submission Successful!'
             else:
                 modalMessage='User name and code do not match.'
@@ -182,10 +211,20 @@ if selected == 'Survey':
             st.markdown(f'{modalMessage}')
     
 
-    
 elif selected=='Reset':
     st.write('''Your selections have been cleared.  \\nDue to a bug in the platform software that has not been patched yet, 
              this needs to be done in two steps. Please hit the 'Reload' button and you will be returned to the selections page.''')
     if st.button('Reload'):
-        selected='Survey'
+        selected='Selections'
         st.rerun()
+
+elif selected=='History':
+    st.write(viewWeek)
+    # if currentWeekView:
+    #     #pull from pickled users
+    # else:
+    #     #pull info out of userlist data
+        
+        
+        
+        
