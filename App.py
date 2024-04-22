@@ -7,7 +7,7 @@ Created on Thu Apr 18 15:36:38 2024
 
 import streamlit as st
 from streamlit_option_menu import option_menu
-from streamlit_custom_notification_box import custom_notification_box as popup
+# from streamlit_custom_notification_box import custom_notification_box as popup
 from streamlit_modal import Modal
 import pandas as pd
 import numpy as np
@@ -206,7 +206,7 @@ if selected == 'Selections':
         else:
             if int(code)==users[name]:
                 #save score
-                submitPath = f'/Week Submissions/{name} Wk{week}.pk1'
+                submitPath = f'C:/Documents/GitHub/Confidence-League/Week Submissions/{name} Wk{week}.pk1'
                 with open(submitPath,'wb') as f:
                     pickle.dump(data,f)
                 modalMessage='Submission Successful!'
