@@ -12,6 +12,7 @@ from streamlit_modal import Modal
 import pandas as pd
 import numpy as np
 from datetime import date
+import pickle
 #cd Documents\GitHub\Confidence-League
 #streamlit run App.py
 st.markdown(
@@ -115,15 +116,16 @@ with st.sidebar:
         st.write('''Use this page to view submissions from yourself for this week, or any user from previous weeks.  \nTo 
                  view other users previous selections, just select their name from the dropdown and the week you want to view.  \nTo 
                  view your current selections for this week, select your name, enter your code, and select the current week.''')
-        name = st.selectbox('Name', options=names, key='viewName', index=None)
+        histName = st.selectbox('Name', options=names, key='histName', index=None)
         code = st.text_input('User Code',max_chars=3,key='code')
         listWeeks=seasonWeeks
         currentWeekView=False
-        if code and name:
-            if int(code)==users[name]:
+        if code and histName:
+            if int(code)==users[histName]:
                 listWeeks.append(week)
-                currentWeekView=True
+                # currentWeekView=True
         viewWeek = st.selectbox('Week',options=listWeeks,key='week',index=None)
+        histPopulate = st.button('Populate')
         st.markdown("""<hr style="border-width: 3px;" />""", unsafe_allow_html=True)
         st.header('Note:')
         st.write('''You can switch between this page and the selections page freely if you are editing your selections for the week. 
@@ -194,7 +196,7 @@ if selected == 'Selections':
     with col2:
         st.dataframe(disp2,use_container_width=True)
     
-    modal = Modal(key='modal', title='Submission Error')
+    submitModal = Modal(key='submitModal', title='Submission Error')
     col1,col2,col3=st.columns([2,1,2])
     if col2.button('Submit Answers',use_container_width=True):
         if not name or not code:
@@ -204,10 +206,13 @@ if selected == 'Selections':
         else:
             if int(code)==users[name]:
                 #save score
+                submitPath = f'/Week Submissions/{name} Wk{week}.pk1'
+                with open(submitPath,'wb') as f:
+                    pickle.dump(data,f)
                 modalMessage='Submission Successful!'
             else:
                 modalMessage='User name and code do not match.'
-        with modal.container():
+        with submitModal.container():
             st.markdown(f'{modalMessage}')
     
 
@@ -221,10 +226,20 @@ elif selected=='Reset':
 elif selected=='History':
     st.write(viewWeek)
     # if currentWeekView:
-    #     #pull from pickled users
-    # else:
-    #     #pull info out of userlist data
-        
+    if viewWeek==week:
+        #pull from pickled users
+        fileName = histName + f' Wk{viewWeek}.pk1'
+        if histPopulate:
+            try:
+                with open(fileName,'rb') as f:
+                      histData=pickle.load(f)
+            except:
+                histModal = Modal(key='histModal', title='Fetch Error')
+                with histModal.container():
+                    st.markdown('You have not submitted your selections for the week yet.')
+    else:
+        #pull info out of userlist data
+        st.write(histName)
         
         
         
