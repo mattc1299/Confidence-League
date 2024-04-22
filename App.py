@@ -206,7 +206,8 @@ if selected == 'Selections':
         else:
             if int(code)==users[name]:
                 #save score
-                submitPath = f'C:/Documents/GitHub/Confidence-League/Week Submissions/{name} Wk{week}.pk1'
+                # submitPath = f'C:/Documents/GitHub/Confidence-League/Week Submissions/{name} Wk{week}.pk1'
+                submitPath = f'/Week Submissions/{name} Wk{week}.pk1'
                 with open(submitPath,'wb') as f:
                     pickle.dump(data,f)
                 modalMessage='Submission Successful!'
