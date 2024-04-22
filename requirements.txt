@@ -3,3 +3,4 @@ pandas
 pickle
 streamlit
 streamlit_option_menu==0.3.2
+streamlit_modal==0.1.2
