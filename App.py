@@ -60,6 +60,18 @@ class User:
         hold = self.Teams[self.Teams.columns[2:]]
         self.Teams['Average'] = round(hold.mean(axis=1), 2)
 
+@st.cache
+def loadBucket():
+    credentials = service_account.Credentials.from_service_account_info(st.secrets)
+    storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
+    bucket = storage_client.bucket('current-selections')
+    return bucket
+
+@st.cache
+def getBlob(name,week):
+    bucket = loadBucket()
+    return bucket.blob(f'{name} Wk{week}.csv')
+
 
 st.markdown(
     """
@@ -111,7 +123,6 @@ st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allo
 # blob=bucket.blob('Test.csv')
 # with blob.open("r") as f:
 #     TestRead = pd.read_csv(f)
-
 
 
 startDate = date(2024,4,1)
@@ -264,21 +275,14 @@ if selected == 'Selections':
         elif any(data.iloc[:,0].isnull()) or any(data.iloc[:,1].isnull()):
             modalMessage='Please make all selections before submitting.'
         else:
-            if int(code)==users[name]:
-                #save score
-                # submitPath = f'C:/Documents/GitHub/Confidence-League/Week Submissions/{name} Wk{week}.pk1'
-                # submitPath = 'Week-Submitions/Teams.pk1'
-                # with open(submitPath,'wb') as f:
-                #     pickle.dump(data,f)
-                
-                credentials = service_account.Credentials.from_service_account_info(st.secrets['cred'])
-                storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
-                bucket=storage_client.bucket('current-selections')
-                blob=bucket.blob(f'{name} Wk{week}.csv')
+            if int(code)==users[name]:                
+                # credentials = service_account.Credentials.from_service_account_info(st.secrets)
+                # storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
+                # bucket=storage_client.bucket('current-selections')
+                # blob=bucket.blob(f'{name} Wk{week}.csv')
+                blob = getBlob(name, week)
                 with blob.open('w') as f:
                     f.write(data.to_csv(index=True))
-                
-                
                 modalMessage='Submission Successful!'
             else:
                 modalMessage='User name and code do not match.'
@@ -295,17 +299,10 @@ elif selected=='Reset':
         st.rerun()
 
 elif selected=='History':
-    # st.write(st.secrets)
-    # st.write(viewWeek)
-    # st.write(TestRead)
-    # if currentWeekView:
     if histPopulate:
         if viewWeek==week:
             try:
-                credentials = service_account.Credentials.from_service_account_info(st.secrets)
-                storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
-                bucket = storage_client.bucket('current-selections')
-                blob = bucket.blob(f'{histName} Wk{viewWeek}.csv')
+                blob = getBlob(histName, viewWeek)
                 with blob.open('r') as f:
                     histData = pd.read_csv(f)
             except:
@@ -315,19 +312,14 @@ elif selected=='History':
                 # st.session_state.weekSubmissions = list(bucket.list_blobs())
                 # st.write(st.session_state.weekSubmissions)
         else:
+            #if 'userList' not in session state instead of try
             try:
                 if len(st.session_state.userList)>0:
                     st.write(len(st.session_state.userList))
             except:
-                # credentials = service_account.Credentials.from_service_account_info(st.secrets)
-                # storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
-                # bucket = storage_client.bucket('current-selections')
-                # blob = bucket.blob('User List.pk1')
-                # with blob.open('r') as f:
-                #     st.session_state.userList = pickle.load(f)
                 with open('User List.pk1','rb') as f:
                     st.session_state.userList = pickle.load(f)
-                
+
             
             
 
