@@ -8,13 +8,59 @@ Created on Thu Apr 18 15:36:38 2024
 import streamlit as st
 from streamlit_option_menu import option_menu
 # from streamlit_custom_notification_box import custom_notification_box as popup
+# from st_files_connection import FilesConnection
 from streamlit_modal import Modal
+from google.cloud import storage
+from google.oauth2 import service_account
 import pandas as pd
 import numpy as np
 from datetime import date
 import pickle
 #cd Documents\GitHub\Confidence-League
 #streamlit run App.py
+class User:
+    def __init__(self, name):
+        self.Name = name
+        self.Data = {}
+        self.Scores = {}
+        self.Total = 0
+        with open('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Teams.pk1','rb') as f:
+              self.Teams=pickle.load(f)
+        with open('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Confidences.pk1','rb') as f:
+              self.Confidences=pickle.load(f)
+        
+    def AddWeek(self, week, data):
+        self.Data[week] = data
+    
+    def Score(self, week, winners):
+        data = self.Data.get(week)
+        comparison = np.where(data['Winner']==winners['Winner'], data['Confidence'],0)
+        self.Scores[week] = int(np.sum(comparison))
+        self.Total=0
+        for score in self.Scores.values():
+            self.Total += score
+
+    def TeamScores(self, WinnerList):
+        self.Teams.iloc[:] = 0
+        self.Confidences.iloc[:] = 0
+        for week,winners in WinnerList.items():
+            data = self.Data.get(week)
+            self.Teams[f'Wk{week}'] = 0
+            for i in range(0,len(data)): #update the numebr of occurences of each confidence for % correct and weekly track team rankings
+                Con = int(data.iloc[i,2])
+                self.Confidences.loc[Con,'Occurrences'] += 1
+                team = data.iloc[i,1] #team assigned confidence
+                self.Teams.loc[team, f'Wk{week}'] = Con
+            Comparison = np.where(data['Winner']==winners['Winner'], data['Confidence'], 0) #gets confidence of each matchup
+            for i in range(0,len(winners)):
+                team = winners.iloc[i,1] #team that won
+                self.Teams.loc[team,['Total']] += Comparison[i]
+                if int(Comparison[i]) in self.Confidences.index: self.Confidences.loc[int(Comparison[i]),'Total'] += Comparison[i]
+        self.Confidences['Correct'] = round(self.Confidences['Total'] / (self.Confidences['Occurrences'] * self.Confidences.index),2)
+        hold = self.Teams[self.Teams.columns[2:]]
+        self.Teams['Average'] = round(hold.mean(axis=1), 2)
+
+
 st.markdown(
     """
 <style>
@@ -58,6 +104,16 @@ st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allo
 
 #----------------------------------------------------------------------------------------------------------------------
 
+# storage_client = storage.Client.from_service_account_info(st.secrets)
+# credentials = service_account.Credentials.from_service_account_info(st.secrets)
+# storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
+# bucket=storage_client.bucket('current-selections')
+# blob=bucket.blob('Test.csv')
+# with blob.open("r") as f:
+#     TestRead = pd.read_csv(f)
+
+
+
 startDate = date(2024,4,1)
 today=date.today()
 week=(today-startDate).days//7
@@ -69,12 +125,17 @@ for i in range(1,week):
 df = pd.read_csv('Matchups Wk1.csv')
 userdf = pd.read_csv('Users.csv')
 users={}
+names=[]
 for i in range(0,len(userdf)):
     users[userdf.iloc[i,0]]=userdf.iloc[i,1]
-names = []
-for key in users.keys():
-    names.append(key)
+    names.append(userdf.iloc[i,0])
+# names = []
+# for key in users.keys():
+#     names.append(key)
 matchups = df['Wk1'].tolist()
+
+# conn=st.connection('gcs', type=FilesConnection)
+# Hold = conn.read("current-selections/Test.csv", input_format="csv", ttl=600)
 
 
 selected = option_menu(None,
@@ -196,7 +257,6 @@ if selected == 'Selections':
     with col2:
         st.dataframe(disp2,use_container_width=True)
     
-    submitModal = Modal(key='submitModal', title='Submission Error')
     col1,col2,col3=st.columns([2,1,2])
     if col2.button('Submit Answers',use_container_width=True):
         if not name or not code:
@@ -207,12 +267,22 @@ if selected == 'Selections':
             if int(code)==users[name]:
                 #save score
                 # submitPath = f'C:/Documents/GitHub/Confidence-League/Week Submissions/{name} Wk{week}.pk1'
-                submitPath = 'Week-Submitions/Teams.pk1'
-                with open(submitPath,'wb') as f:
-                    pickle.dump(data,f)
+                # submitPath = 'Week-Submitions/Teams.pk1'
+                # with open(submitPath,'wb') as f:
+                #     pickle.dump(data,f)
+                
+                credentials = service_account.Credentials.from_service_account_info(st.secrets['cred'])
+                storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
+                bucket=storage_client.bucket('current-selections')
+                blob=bucket.blob(f'{name} Wk{week}.csv')
+                with blob.open('w') as f:
+                    f.write(data.to_csv(index=True))
+                
+                
                 modalMessage='Submission Successful!'
             else:
                 modalMessage='User name and code do not match.'
+        submitModal = Modal(key='submitModal', title='Submission Status')
         with submitModal.container():
             st.markdown(f'{modalMessage}')
     
@@ -225,22 +295,42 @@ elif selected=='Reset':
         st.rerun()
 
 elif selected=='History':
-    st.write(viewWeek)
+    # st.write(st.secrets)
+    # st.write(viewWeek)
+    # st.write(TestRead)
     # if currentWeekView:
-    if viewWeek==week:
-        #pull from pickled users
-        fileName = histName + f' Wk{viewWeek}.pk1'
-        if histPopulate:
+    if histPopulate:
+        if viewWeek==week:
             try:
-                with open(fileName,'rb') as f:
-                      histData=pickle.load(f)
+                credentials = service_account.Credentials.from_service_account_info(st.secrets)
+                storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
+                bucket = storage_client.bucket('current-selections')
+                blob = bucket.blob(f'{histName} Wk{viewWeek}.csv')
+                with blob.open('r') as f:
+                    histData = pd.read_csv(f)
             except:
                 histModal = Modal(key='histModal', title='Fetch Error')
                 with histModal.container():
                     st.markdown('You have not submitted your selections for the week yet.')
-    else:
-        #pull info out of userlist data
-        st.write(histName)
+                # st.session_state.weekSubmissions = list(bucket.list_blobs())
+                # st.write(st.session_state.weekSubmissions)
+        else:
+            try:
+                if len(st.session_state.userList)>0:
+                    st.write(len(st.session_state.userList))
+            except:
+                # credentials = service_account.Credentials.from_service_account_info(st.secrets)
+                # storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
+                # bucket = storage_client.bucket('current-selections')
+                # blob = bucket.blob('User List.pk1')
+                # with blob.open('r') as f:
+                #     st.session_state.userList = pickle.load(f)
+                with open('User List.pk1','rb') as f:
+                    st.session_state.userList = pickle.load(f)
+                
+            
+            
+
         
         
         
