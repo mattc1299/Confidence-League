@@ -60,17 +60,38 @@ class User:
         hold = self.Teams[self.Teams.columns[2:]]
         self.Teams['Average'] = round(hold.mean(axis=1), 2)
 
-@st.cache
+@st.cache_resource
 def loadBucket():
     credentials = service_account.Credentials.from_service_account_info(st.secrets)
     storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
     bucket = storage_client.bucket('current-selections')
     return bucket
+# st.session_state.weekSubmissions = list(bucket.list_blobs())
 
-@st.cache
+@st.cache_resource
 def getBlob(name,week):
     bucket = loadBucket()
     return bucket.blob(f'{name} Wk{week}.csv')
+
+@st.cache_data
+def establishInputs(today):
+    startDate = date(2024,4,1)
+    # today=date.today()
+    week=(today-startDate).days//7
+    seasonWeeks=[]
+    for i in range(1,week):
+        seasonWeeks.append(i)
+    # df = pd.read_csv(f'Matchups Wk{week}.csv')
+    df = pd.read_csv('Matchups Wk1.csv')
+    userdf = pd.read_csv('Users.csv')
+    users={}
+    names=[]
+    for i in range(0,len(userdf)):
+        users[userdf.iloc[i,0]]=userdf.iloc[i,1]
+        names.append(userdf.iloc[i,0])
+    # matchups = df[f'Wk{week}'].tolist()
+    matchups = df['Wk1'].tolist()
+    return week, seasonWeeks, users, names, matchups
 
 
 st.markdown(
@@ -116,37 +137,9 @@ st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allo
 
 #----------------------------------------------------------------------------------------------------------------------
 
-# storage_client = storage.Client.from_service_account_info(st.secrets)
-# credentials = service_account.Credentials.from_service_account_info(st.secrets)
-# storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
-# bucket=storage_client.bucket('current-selections')
-# blob=bucket.blob('Test.csv')
-# with blob.open("r") as f:
-#     TestRead = pd.read_csv(f)
 
-
-startDate = date(2024,4,1)
 today=date.today()
-week=(today-startDate).days//7
-seasonWeeks=[]
-for i in range(1,week):
-    seasonWeeks.append(i)
-
-
-df = pd.read_csv('Matchups Wk1.csv')
-userdf = pd.read_csv('Users.csv')
-users={}
-names=[]
-for i in range(0,len(userdf)):
-    users[userdf.iloc[i,0]]=userdf.iloc[i,1]
-    names.append(userdf.iloc[i,0])
-# names = []
-# for key in users.keys():
-#     names.append(key)
-matchups = df['Wk1'].tolist()
-
-# conn=st.connection('gcs', type=FilesConnection)
-# Hold = conn.read("current-selections/Test.csv", input_format="csv", ttl=600)
+week, seasonWeeks, users, names, matchups = establishInputs(today)
 
 
 selected = option_menu(None,
@@ -191,18 +184,19 @@ with st.sidebar:
         histName = st.selectbox('Name', options=names, key='histName', index=None)
         code = st.text_input('User Code',max_chars=3,key='code')
         listWeeks=seasonWeeks
-        currentWeekView=False
-        if code and histName:
+        if code and histName: #only allow user to see their own current week selections
             if int(code)==users[histName]:
                 listWeeks.append(week)
-                # currentWeekView=True
-        viewWeek = st.selectbox('Week',options=listWeeks,key='week',index=None)
+        histWeek = st.selectbox('Week',options=listWeeks,key='week',index=None)
         histPopulate = st.button('Populate')
         st.markdown("""<hr style="border-width: 3px;" />""", unsafe_allow_html=True)
         st.header('Note:')
-        st.write('''You can switch between this page and the selections page freely if you are editing your selections for the week. 
+        st.write('''You can switch between this page and the selections page freely without losing progress. 
                   The dropdowns on the selections page might not correctly load the values or appear blank, but your inputs will be retained. 
-                  You can confirm this by checking the table at the bottom of the page.''')
+                  You can confirm this by checking the table at the bottom of the page.
+                  (unfortunately there is nothing I can do about this due to platform limitations)''')
+        st.write('''If you viewed your selections for this week on this page and have since submitted new selections, you will
+                 need to reload the page in order for the new selections to show up here.''')
     elif sidebarState=='Dashboard':
         st.header('DASHBOARD')
         st.write('view different stats about the league')
@@ -220,7 +214,6 @@ if selected == 'Selections':
         st.session_state.numbers = []
         for i in range(1,len(matchups)+1):
             st.session_state.numbers.append(i)
-        # st.session_state.numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16] #need to change to match number of matchups
     
     for i, question in enumerate(st.session_state.questions):
         winner = st.selectbox(f'Game {i+1} - {question}', options=question.split('/'), key=(i+1)*2-1, index=None)
@@ -233,7 +226,7 @@ if selected == 'Selections':
         else:
             default_value = st.session_state.answers[question]
     
-        options = [0] + list(st.session_state.numbers)
+        options = list(st.session_state.numbers)
         
         if default_value != 0 and default_value not in options:
             options.append(default_value)
@@ -260,7 +253,7 @@ if selected == 'Selections':
         data.loc[key,'Winner'] = value
     for key,value in st.session_state.answers.items():
         data.loc[key,'Confidence'] = value
-    disp1=data.head(8)
+    disp1=data.head(8) #manipulate for display pourposes
     disp2=data.tail(-8)
     col1,col2=st.columns([1,1])
     with col1:
@@ -275,11 +268,7 @@ if selected == 'Selections':
         elif any(data.iloc[:,0].isnull()) or any(data.iloc[:,1].isnull()):
             modalMessage='Please make all selections before submitting.'
         else:
-            if int(code)==users[name]:                
-                # credentials = service_account.Credentials.from_service_account_info(st.secrets)
-                # storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
-                # bucket=storage_client.bucket('current-selections')
-                # blob=bucket.blob(f'{name} Wk{week}.csv')
+            if int(code)==users[name]:
                 blob = getBlob(name, week)
                 with blob.open('w') as f:
                     f.write(data.to_csv(index=True))
@@ -300,25 +289,37 @@ elif selected=='Reset':
 
 elif selected=='History':
     if histPopulate:
-        if viewWeek==week:
+        if histWeek==week: #current week selections from gogole cloud storage
             try:
-                blob = getBlob(histName, viewWeek)
+                blob = getBlob(histName, histWeek)
                 with blob.open('r') as f:
-                    histData = pd.read_csv(f)
+                    st.session_state.histData = pd.read_csv(f)
             except:
                 histModal = Modal(key='histModal', title='Fetch Error')
                 with histModal.container():
                     st.markdown('You have not submitted your selections for the week yet.')
-                # st.session_state.weekSubmissions = list(bucket.list_blobs())
-                # st.write(st.session_state.weekSubmissions)
-        else:
-            #if 'userList' not in session state instead of try
-            try:
-                if len(st.session_state.userList)>0:
-                    st.write(len(st.session_state.userList))
-            except:
+        else: #previous week selections from userList pickle
+            if 'userList' not in st.session_state:
                 with open('User List.pk1','rb') as f:
                     st.session_state.userList = pickle.load(f)
+            viewUser = st.session_state.userList[histName]
+            st.session_state.histData = viewUser.Data.get(histWeek)
+        st.session_state.dispName = histName #so displayed data doesnt change when sidebar state updated
+        st.session_state.dispWeek = histWeek
+        
+    if 'histData' in st.session_state:
+        st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>{st.session_state.dispName} Week {st.session_state.dispWeek} Selections</h1>", unsafe_allow_html=True)
+        # st.session_state.histData.set_index('Matchup', inplace=True)
+        histDisp1 = st.session_state.histData.head(8)
+        histDisp2 = st.session_state.histData.tail(-8)
+        col1,col2=st.columns([1,1])
+        with col1:
+            st.dataframe(histDisp1, use_container_width=True)
+        with col2:
+            st.dataframe(histDisp2, use_container_width=True)
+    else:
+        st.write("Enter information in the sidebar to view selections")
+
 
             
             
