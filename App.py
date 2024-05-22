@@ -81,16 +81,16 @@ def establishInputs(today):
     seasonWeeks=[]
     for i in range(1,week):
         seasonWeeks.append(i)
-    # df = pd.read_csv(f'Matchups Wk{week}.csv')
+    # df = pd.read_csv(f'Matchups/Matchups Wk{week}.csv')
     df = pd.read_csv('Matchups Wk1.csv')
+    # matchups = df[f'Wk{week}'].tolist()
+    matchups = df['Wk1'].tolist()
     userdf = pd.read_csv('Users.csv')
     users={}
     names=[]
     for i in range(0,len(userdf)):
         users[userdf.iloc[i,0]]=userdf.iloc[i,1]
         names.append(userdf.iloc[i,0])
-    # matchups = df[f'Wk{week}'].tolist()
-    matchups = df['Wk1'].tolist()
     return week, seasonWeeks, users, names, matchups
 
 
