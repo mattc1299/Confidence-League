@@ -75,7 +75,7 @@ def getBlob(name,week):
 
 @st.cache_data
 def establishInputs(today):
-    startDate = date(2024,4,1)
+    startDate = date(2024,5,1)
     # today=date.today()
     week=(today-startDate).days//7
     seasonWeeks=[]
@@ -93,6 +93,13 @@ def establishInputs(today):
         names.append(userdf.iloc[i,0])
     return week, seasonWeeks, users, names, matchups
 
+
+st.set_page_config(
+    page_title="Confidence-League Dashbaord",
+    page_icon=':bar_chart:',
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 st.markdown(
     """
@@ -133,6 +140,24 @@ st.write('<style>div.block-container{padding-bottom:3rem;}</style>', unsafe_allo
 #         url='#', 
 #         styles=styles, 
 #         key="foo")
+
+#can text align specific columns
+# st.markdown(
+# """
+# <style>
+#     div[data-testid="column"]:nth-of-type(1)
+#     {
+#         border:1px solid red;
+#     } 
+
+#     div[data-testid="column"]:nth-of-type(2)
+#     {
+#         border:1px solid blue;
+#         text-align: end;
+#     } 
+# </style>
+# """,unsafe_allow_html=True
+# )
 
 
 #----------------------------------------------------------------------------------------------------------------------
@@ -198,7 +223,7 @@ with st.sidebar:
         st.write('''If you viewed your selections for this week on this page and have since submitted new selections, you will
                  need to reload the page in order for the new selections to show up here.''')
     elif sidebarState=='Dashboard':
-        st.header('DASHBOARD')
+        st.header('Dashboard')
         st.write('view different stats about the league')
         st.selectbox('Name', options=names, key='name', index=None)
 
@@ -253,13 +278,23 @@ if selected == 'Selections':
         data.loc[key,'Winner'] = value
     for key,value in st.session_state.answers.items():
         data.loc[key,'Confidence'] = value
-    disp1=data.head(8) #manipulate for display pourposes
-    disp2=data.tail(-8)
+    dispData = data.reset_index()
+    dispData[['Winner','Confidence']] = dispData[['Winner','Confidence']].astype(str) #so displayed data si not greyed out
+    disp1 = dispData.head(8)
+    disp2 = dispData.tail(-8)
+    # disp1=data.head(8) #manipulate for display pourposes
+    # disp2=data.tail(-8)    
     col1,col2=st.columns([1,1])
     with col1:
-        st.dataframe(disp1, use_container_width=True)
+        # hold = disp1.reset_index()
+        # # styledf = hold.style.set_properties(**{
+        # #     'text-align': 'center'
+        # #     })
+        # st.markdown(hold.style.hide(axis='index').to_html(), unsafe_allow_html=True)
+        # st.write(disp1, use_container_width=True, unsafe_allow_html=True)
+        st.dataframe(disp1, hide_index=True, use_container_width=True) #try to cetner data in columns
     with col2:
-        st.dataframe(disp2,use_container_width=True)
+        st.dataframe(disp2, hide_index=True, use_container_width=True)
     
     col1,col2,col3=st.columns([2,1,2])
     if col2.button('Submit Answers',use_container_width=True):
@@ -310,18 +345,29 @@ elif selected=='History':
     if 'histData' in st.session_state:
         st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>{st.session_state.dispName} Week {st.session_state.dispWeek} Selections</h1>", unsafe_allow_html=True)
         # st.session_state.histData.set_index('Matchup', inplace=True)
-        histDisp1 = st.session_state.histData.head(8)
-        histDisp2 = st.session_state.histData.tail(-8)
+        histDisp = st.session_state.histData.reset_index()
+        histDisp[['Winner','Confidence']] = histDisp[['Winner','Confidence']].astype(str)
+        histDisp1 = histDisp.head(8)
+        histDisp2 = histDisp.tail(-8)
+        # histDisp1 = st.session_state.histData.head(8)
+        # histDisp2 = st.session_state.histData.tail(-8)
         col1,col2=st.columns([1,1])
         with col1:
-            st.dataframe(histDisp1, use_container_width=True)
+            st.dataframe(histDisp1, hide_index=True, use_container_width=True)
         with col2:
-            st.dataframe(histDisp2, use_container_width=True)
+            st.dataframe(histDisp2, hide_index=True, use_container_width=True)
     else:
         st.write("Enter information in the sidebar to view selections")
 
 
-            
+elif selected=='Dashboard':
+    st.markdown("<h1 style='text-align: center; font-size: 40px;'>Leaderboards</h1>", unsafe_allow_html=True)
+    
+    
+    st.markdown("<h1 style='text-align: center; font-size: 40px;'>User Data</h1>", unsafe_allow_html=True)
+    
+    
+    st.markdown("<h1 style='text-align: center; font-size: 40px;'>Team Data</h1>", unsafe_allow_html=True)
             
 
         
