@@ -16,6 +16,8 @@ import pandas as pd
 import numpy as np
 from datetime import date
 import pickle
+import matplotlib.pyplot as plt
+import plotly.express as px
 #cd Documents\GitHub\Confidence-League
 #streamlit run App.py
 class User:
@@ -93,6 +95,18 @@ def establishInputs(today):
         names.append(userdf.iloc[i,0])
     return week, seasonWeeks, users, names, matchups
 
+def user_leader(userList):
+    scores = pd.DataFrame(columns=['Total'])
+    for name, user in userList.items():
+        scores.loc[name,'Total'] = user.Total
+    scores = scores.sort_values(by=['Total'], ascending=True)
+    plotScores = scores.head(5).rename_axis('User')
+    xmin = plotScores['Total'].min()-20
+    xmax = plotScores['Total'].max()+20
+    fig =px.bar(plotScores,x='Total',y=plotScores.index,orientation='h',title='User Leaderboard')
+    fig.update_layout(xaxis_range=[xmin,xmax])
+    st.plotly_chart(fig,use_container_width=True)
+    # return fig
 
 st.set_page_config(
     page_title="Confidence-League Dashbaord",
@@ -361,9 +375,14 @@ elif selected=='History':
 
 
 elif selected=='Dashboard':
+    if 'userList' not in st.session_state:
+        with open('User List.pk1','rb') as f:
+            st.session_state.userList = pickle.load(f)
+    
     st.markdown("<h1 style='text-align: center; font-size: 40px;'>Leaderboards</h1>", unsafe_allow_html=True)
-    
-    
+    row1=st.columns([2,1,2])
+    with row1[0]:
+        user_leader(st.session_state.userList)
     st.markdown("<h1 style='text-align: center; font-size: 40px;'>User Data</h1>", unsafe_allow_html=True)
     
     
