@@ -81,9 +81,10 @@ def getBlob(name,week):
 
 @st.cache_data
 def establishInputs(today):
-    startDate = date(2024,7,1,)
     # today=date.today()
-    week=(today-startDate).days//7
+    # startDate = date(2024,7,1,)
+    # week=(today-startDate).days//7
+    week=1
     seasonWeeks=[]
     for i in range(1,week):
         seasonWeeks.append(i)
@@ -787,13 +788,17 @@ if selected == 'Selections':
             modalMessage='Please make all selections before submitting.'
         else:
             if int(code)==users[name]:
-                if CheckTime(datetime.now(pytz.timezone('US/Central'))):
-                    blob = getBlob(name, week)
-                    with blob.open('w') as f:
-                        f.write(data.to_csv(index=True))
-                    modalMessage='Submission Successful!'
-                else:
-                    modalMessage='Invalid Submission: submission window is Tuesday 12:01am - Thursday 5:00pm Central'
+                # if CheckTime(datetime.now(pytz.timezone('US/Central'))):
+                #     blob = getBlob(name, week)
+                #     with blob.open('w') as f:
+                #         f.write(data.to_csv(index=True))
+                #     modalMessage='Submission Successful!'
+                # else:
+                #     modalMessage='Invalid Submission: submission window is Tuesday 12:01am - Thursday 5:00pm Central'
+                blob = getBlob(name, week)
+                with blob.open('w') as f:
+                    f.write(data.to_csv(index=True))
+                modalMessage='Submission Successful!'
             else:
                 modalMessage='User name and code do not match.'
         submitModal = Modal(key='submitModal', title='Submission Status')
