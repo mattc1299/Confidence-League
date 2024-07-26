@@ -852,91 +852,94 @@ elif selected=='History':
 
 
 elif selected=='Dashboard':
-    if 'userList' not in st.session_state:
-        with open('User List.pk1','rb') as f:
-            st.session_state.userList = pickle.load(f)
-    if 'teamTotals' not in st.session_state:
-        with open('Team Totals.pk1','rb') as f:
-            st.session_state.teamTotals = pickle.load(f)
-    if name:
-        compUsers = {name: st.session_state.userList[name]}
-    compUsers.update({user: st.session_state.userList[user] for user in compNames})
-    
-    # hold = st.session_state.teamTotals
-    # st.dataframe(st.session_state.teamTotals,hide_index=True)
-    st.markdown("<h1 style='text-align: center; font-size: 35px;'>Leaderboard</h1>", unsafe_allow_html=True)
-    row1=st.columns([4,.5,4])
-    with row1[0]:
-        fig = UserLeader(st.session_state.userList)
-        st.plotly_chart(fig,use_container_width=True)
-    with row1[2]:
-        # fig = TeamLeader(st.session_state.teamTotals)
-        # st.plotly_chart(fig,use_container_width=True)
-        #if name then show top, 3 either end, and bottom, else show top5 bottom 5
-        data = [(user.Name,user.Total) for user in st.session_state.userList.values()]
-        scores = pd.DataFrame(data, columns=['Name','Total'])
-        scores.sort_values(by=['Total'], ascending=False,inplace=True)
-        scores.reset_index(drop=True,inplace=True)
-        scores.rename_axis('Ranking',inplace=True)
-        # st.dataframe(scores.head(2),hide_index=True,use_container_width=True)
-        # st.dataframe(scores.tail(2),hide_index=True,use_container_width=True)
-        st.markdown("<h1 style='text-align: center; font-size: 16px;'>Selected User Ranking</h1>", unsafe_allow_html=True)
-        midRow = st.columns([1,1])
-        with midRow[0]:
-            st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank 1: {scores.iloc[0,0]} --> {scores.iloc[0,1]} pts</b></h1>", unsafe_allow_html=True)
-        with midRow[1]:
-            st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank {len(scores)}: {scores.iloc[-1,0]} --> {scores.iloc[-1,1]} pts</b></h1>", unsafe_allow_html=True)
-        st.markdown("""<hr style="border-width: 2px;" />""", unsafe_allow_html=True)
-        bottomRow = st.columns([1,1])
-        with bottomRow[0]:
-            if compUsers:
-                dispScores = scores[scores['Name'].isin(compUsers)]
-                for ind in dispScores.index:
-                    # st.write(f'Rank {ind+1}: {dispScores["Name"][ind]} --> {dispScores["Total"][ind]}')
-                    st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank {ind+1}: {dispScores['Name'][ind]} --> {dispScores['Total'][ind]}</b></h1>", unsafe_allow_html=True)
-                    
-        with bottomRow[1]:
-            st.download_button('Download User Rankings',scores.to_csv().encode('utf-8'),'Rankings.csv',use_container_width=True)
-        # for n in compUsers.keys():
-        #     rank = scores.Name[scores.Name==n].index.to_list()[0]+1
-        #     # st.dataframe(scores.loc[scores["Name"]==n,"Total"])
-        #     st.write(f'Rank {rank}: {n} --> {scores.loc[scores["Name"]==n,"Total"].values[0]}')
-        # st.write(str(scores.Name[scores.Name=='Justice'].index.to_list()[0]+1))
-    
-    st.markdown("<h1 style='text-align: center; font-size: 35px;'>League Wide Data</h1>", unsafe_allow_html=True)
-    row2=st.columns([4,.5,4])
-    with row2[0]:
-        # fig=TeamTotals(st.session_state.teamTotals)
-        st.plotly_chart(TeamTotals(st.session_state.teamTotals),use_container_width=True)
-    with row2[2]:
-        # fig = TeamBox(st.session_state.teamTotals)
-        st.plotly_chart(TeamBox(st.session_state.teamTotals),use_container_width=True)
-    st.markdown("<h1 style='text-align: center; font-size: 35px;'>User Data</h1>", unsafe_allow_html=True)
-    row3=st.columns([4,.5,4])
-    if name:
-        with row3[0]:
-            # fig = UserWeeklyCompare(st.session_state.userList)
-            # if compNames:    
-            #     users = {name: st.session_state.userList[name]}
-            #     users.update({user: st.session_state.userList[user] for user in compNames})
-            #     st.plotly_chart(UserWeeklyCompare(users),use_container_width=True)
-            # else:
-            #     st.plotly_chart(UserWeeklyCompare({name: st.session_state.userList[name]}),use_container_width=True)
-            st.plotly_chart(UserWeeklyCompare(compUsers),use_container_width=True)
-        with row3[2]:
-            # fig = UserTeamTotals({1:st.session_state.userList['Justice']})
-            # fig = UserTeamTotals(st.session_state.userList['Justice']) 
-            st.plotly_chart(UserTeamTotals(st.session_state.userList[name]),use_container_width=True)
-        row4=st.columns([4,1,4])
-        with row4[0]:
-            # fig = UserConfidencePercent(st.session_state.userList['Justice'])
-            st.plotly_chart(UserConfidencePercent(st.session_state.userList[name]),use_container_width=True)
-        with row4[2]:
-            # fig = UserBox(st.session_state.userList['Justice'])
-            st.plotly_chart(UserBox(st.session_state.userList[name]),use_container_width=True)
+    if week==1:
+        st.markdown("<h1 style='text-align: center; font-size: 35px;'>No data to be displayed during week 1.</h1>", unsafe_allow_html=True)
     else:
-        st.markdown("<h1 style='text-align: center; font-size: 16px;'><b>Select user to view stats</b></h1>", unsafe_allow_html=True)
-    # st.dataframe(st.session_state.teamTotals,hide_index=True)
+        if 'userList' not in st.session_state:
+            with open('User List.pk1','rb') as f:
+                st.session_state.userList = pickle.load(f)
+        if 'teamTotals' not in st.session_state:
+            with open('Team Totals.pk1','rb') as f:
+                st.session_state.teamTotals = pickle.load(f)
+        if name:
+            compUsers = {name: st.session_state.userList[name]}
+        compUsers.update({user: st.session_state.userList[user] for user in compNames})
+        
+        # hold = st.session_state.teamTotals
+        # st.dataframe(st.session_state.teamTotals,hide_index=True)
+        st.markdown("<h1 style='text-align: center; font-size: 35px;'>Leaderboard</h1>", unsafe_allow_html=True)
+        row1=st.columns([4,.5,4])
+        with row1[0]:
+            fig = UserLeader(st.session_state.userList)
+            st.plotly_chart(fig,use_container_width=True)
+        with row1[2]:
+            # fig = TeamLeader(st.session_state.teamTotals)
+            # st.plotly_chart(fig,use_container_width=True)
+            #if name then show top, 3 either end, and bottom, else show top5 bottom 5
+            data = [(user.Name,user.Total) for user in st.session_state.userList.values()]
+            scores = pd.DataFrame(data, columns=['Name','Total'])
+            scores.sort_values(by=['Total'], ascending=False,inplace=True)
+            scores.reset_index(drop=True,inplace=True)
+            scores.rename_axis('Ranking',inplace=True)
+            # st.dataframe(scores.head(2),hide_index=True,use_container_width=True)
+            # st.dataframe(scores.tail(2),hide_index=True,use_container_width=True)
+            st.markdown("<h1 style='text-align: center; font-size: 16px;'>Selected User Ranking</h1>", unsafe_allow_html=True)
+            midRow = st.columns([1,1])
+            with midRow[0]:
+                st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank 1: {scores.iloc[0,0]} --> {scores.iloc[0,1]} pts</b></h1>", unsafe_allow_html=True)
+            with midRow[1]:
+                st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank {len(scores)}: {scores.iloc[-1,0]} --> {scores.iloc[-1,1]} pts</b></h1>", unsafe_allow_html=True)
+            st.markdown("""<hr style="border-width: 2px;" />""", unsafe_allow_html=True)
+            bottomRow = st.columns([1,1])
+            with bottomRow[0]:
+                if compUsers:
+                    dispScores = scores[scores['Name'].isin(compUsers)]
+                    for ind in dispScores.index:
+                        # st.write(f'Rank {ind+1}: {dispScores["Name"][ind]} --> {dispScores["Total"][ind]}')
+                        st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank {ind+1}: {dispScores['Name'][ind]} --> {dispScores['Total'][ind]}</b></h1>", unsafe_allow_html=True)
+                        
+            with bottomRow[1]:
+                st.download_button('Download User Rankings',scores.to_csv().encode('utf-8'),'Rankings.csv',use_container_width=True)
+            # for n in compUsers.keys():
+            #     rank = scores.Name[scores.Name==n].index.to_list()[0]+1
+            #     # st.dataframe(scores.loc[scores["Name"]==n,"Total"])
+            #     st.write(f'Rank {rank}: {n} --> {scores.loc[scores["Name"]==n,"Total"].values[0]}')
+            # st.write(str(scores.Name[scores.Name=='Justice'].index.to_list()[0]+1))
+        
+        st.markdown("<h1 style='text-align: center; font-size: 35px;'>League Wide Data</h1>", unsafe_allow_html=True)
+        row2=st.columns([4,.5,4])
+        with row2[0]:
+            # fig=TeamTotals(st.session_state.teamTotals)
+            st.plotly_chart(TeamTotals(st.session_state.teamTotals),use_container_width=True)
+        with row2[2]:
+            # fig = TeamBox(st.session_state.teamTotals)
+            st.plotly_chart(TeamBox(st.session_state.teamTotals),use_container_width=True)
+        st.markdown("<h1 style='text-align: center; font-size: 35px;'>User Data</h1>", unsafe_allow_html=True)
+        row3=st.columns([4,.5,4])
+        if name:
+            with row3[0]:
+                # fig = UserWeeklyCompare(st.session_state.userList)
+                # if compNames:    
+                #     users = {name: st.session_state.userList[name]}
+                #     users.update({user: st.session_state.userList[user] for user in compNames})
+                #     st.plotly_chart(UserWeeklyCompare(users),use_container_width=True)
+                # else:
+                #     st.plotly_chart(UserWeeklyCompare({name: st.session_state.userList[name]}),use_container_width=True)
+                st.plotly_chart(UserWeeklyCompare(compUsers),use_container_width=True)
+            with row3[2]:
+                # fig = UserTeamTotals({1:st.session_state.userList['Justice']})
+                # fig = UserTeamTotals(st.session_state.userList['Justice']) 
+                st.plotly_chart(UserTeamTotals(st.session_state.userList[name]),use_container_width=True)
+            row4=st.columns([4,1,4])
+            with row4[0]:
+                # fig = UserConfidencePercent(st.session_state.userList['Justice'])
+                st.plotly_chart(UserConfidencePercent(st.session_state.userList[name]),use_container_width=True)
+            with row4[2]:
+                # fig = UserBox(st.session_state.userList['Justice'])
+                st.plotly_chart(UserBox(st.session_state.userList[name]),use_container_width=True)
+        else:
+            st.markdown("<h1 style='text-align: center; font-size: 16px;'><b>Select user to view stats</b></h1>", unsafe_allow_html=True)
+        # st.dataframe(st.session_state.teamTotals,hide_index=True)
     
         
 
