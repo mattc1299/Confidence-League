@@ -103,7 +103,7 @@ def establishInputs(today):
         names.append(userdf.iloc[i,0])
     return week, seasonWeeks, users, names, matchups
 
-@st.cache_data
+
 def CheckTime(currentTime):
     dayOfWeek = currentTime.weekday()
     if dayOfWeek in [1,2,3]:
@@ -117,7 +117,7 @@ def CheckTime(currentTime):
     else:
         return False
 
-@st.cache_data
+
 def UserLeader(userList):
     data = [(user.Name,user.Total) for user in userList.values()]
     scores = pd.DataFrame(data, columns=['Name','Total'])
@@ -131,7 +131,7 @@ def UserLeader(userList):
     return fig
     # st.plotly_chart(fig,use_container_width=True)
 
-@st.cache_data
+
 def TeamLeader(teamTotals):
     teamSorted = teamTotals[['Total','Average']].copy().reset_index()
     # teamSorted = teamSorted[['Name','Total']].copy()
@@ -146,7 +146,7 @@ def TeamLeader(teamTotals):
     return fig
     # st.plotly_chart(fig,use_container_width=True)
 
-@st.cache_data
+
 def TeamTotals(teamTotals):
     data = teamTotals.copy().reset_index()
     # data = user.Teams.reset_index()
@@ -231,7 +231,7 @@ def TeamTotals(teamTotals):
     # fig.show()
     return fig
 
-@st.cache_data
+
 def TeamBox(teamTotals):
     data = teamTotals.copy().reset_index()
     data.drop(columns=['Total','Average'],inplace=True)
@@ -317,7 +317,7 @@ def TeamBox(teamTotals):
     # fig.show()
     return fig
 
-@st.cache_data
+
 def UserWeeklyCompare(users): #add selector for week ranges
     # color1={2:'rgb(254,1,1)',1:'rgb(255,179,0)',4:'rgb(0,170,255)',3:'rgb(144,0,255)',0:'rgb(0,145,255)'}
     # color2={2:'rgb(254,92,92)',1:'rgb(255,206,92)',4:'rgb(92,201,255)',3:'rgb(180,82,255)',0:'rgb(131,201,255)'} #68 transaprency
@@ -356,7 +356,7 @@ def UserWeeklyCompare(users): #add selector for week ranges
     # fig.show()
     return fig
 
-@st.cache_data
+
 def UserTeamTotals(user):
     data = user.Teams.reset_index()
     # data['Conference'] = 0
@@ -439,7 +439,7 @@ def UserTeamTotals(user):
     fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
     return fig
 
-@st.cache_data
+
 def UserConfidencePercent(user):
     color1={0:'rgb(254,1,1)',1:'rgb(255,179,0)',2:'rgb(0,170,255)',3:'rgb(144,0,255)'}
     color2={0:'rgb(254,92,92)',1:'rgb(255,206,92)',2:'rgb(92,201,255)',3:'rgb(180,82,255)'}
@@ -463,7 +463,7 @@ def UserConfidencePercent(user):
         xaxis=dict(title='Confidence Level', tickvals=[i for i in range(0,17,1)]))
     return fig
 
-@st.cache_data
+
 def UserBox(user, teams=None):
     data = user.Teams
     # data['Conference'] = 0
