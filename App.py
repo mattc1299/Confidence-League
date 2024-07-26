@@ -451,7 +451,7 @@ def UserConfidencePercent(user):
         secondary_y=False,
         )
     fig.add_trace(
-        go.Scatter(x=data['Confidence'], y=data['Total'], name='Total', mode='lines+markers+text', text=data['Total'], textposition='top center', textfont=dict(color='rgb(239,85,59)'), marker=dict(color='rgb(239,85,59)',symbol='diamond',size=10),#color1[1]
+        go.Scatter(x=data['Confidence'], y=data['Total'], name='Total', mode='lines+markers+text', text=data['Total'], textposition='top center', textfont=dict(color='white'), marker=dict(color='rgb(239,85,59)',symbol='diamond',size=10),#color1[1]
                    hovertemplate='<b>%{data.name}</b><br>Confidence Level: %{x}<br>Total: %{y}<extra></extra>'),
         secondary_y=True,
         )
