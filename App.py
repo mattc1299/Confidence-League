@@ -848,12 +848,12 @@ elif selected=='History':
         with col2:
             st.dataframe(histDisp2, hide_index=True, use_container_width=True)
     else:
-        st.write("Enter information in the sidebar to view selections")
+        st.markdown("<h1 style='text-align: center; font-size: 30px;'>Enter information in the sidebar to view selections.</h1>", unsafe_allow_html=True)
 
 
 elif selected=='Dashboard':
     if week==1:
-        st.markdown("<h1 style='text-align: center; font-size: 35px;'>No data to be displayed during week 1.</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; font-size: 30px;'>No data to be displayed during week 1.</h1>", unsafe_allow_html=True)
     else:
         if 'userList' not in st.session_state:
             with open('User List.pk1','rb') as f:
