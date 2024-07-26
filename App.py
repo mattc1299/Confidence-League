@@ -802,7 +802,7 @@ if selected == 'Selections':
     
 
 elif selected=='Reset':
-    st.write('''Your selections have been cleared.  \\nDue to a bug in the platform software that has not been patched yet, 
+    st.write('''Your selections have been cleared.  \nDue to a bug in the platform software that has not been patched yet, 
              this needs to be done in two steps. Please hit the 'Reload' button and you will be returned to the selections page.''')
     if st.button('Reload'):
         selected='Selections'
