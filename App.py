@@ -561,7 +561,7 @@ def UserBox(user, teams=None):
 
 
 st.set_page_config(
-    page_title="Confidence-League Dashbaord",
+    page_title="Confidence-League Dashboard",
     page_icon=':bar_chart:',
     layout="wide",
     initial_sidebar_state="expanded",
