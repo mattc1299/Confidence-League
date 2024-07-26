@@ -335,7 +335,7 @@ def UserWeeklyCompare(users): #add selector for week ranges
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     for i,name in enumerate(weekly.columns):
         fig.add_trace(
-            go.Bar(x=weekly.index, y=weekly[name], name=f'{name} Weekly', marker={'color':color2[i]}, textposition='outside',
+            go.Bar(x=weekly.index, y=weekly[name], name=f'{name} Weekly', marker={'color':color2[i]}, textposition='outside', text=weekly[name],
                    hovertemplate='<b>%{data.name}</b><br>Week: %{x}<br>Score: %{y}<extra></extra>',legendgroup=f'{i}'),
             secondary_y=False,
         )
@@ -349,9 +349,9 @@ def UserWeeklyCompare(users): #add selector for week ranges
     fig.update_layout(
         yaxis=dict(title='Weekly Score', range=[0,201], gridcolor='grey'),
         yaxis2=dict(overlaying='y', side='right', title='Total Score', range=[0,ymax], tickvals=[i for i in range(0, ymax+1, int(ymax/4))], showgrid=False),
-        xaxis=dict(title='Week', tickvals=[i for i in range(0,len(weekly)+1,1)],rangeslider=dict(visible=True,thickness=0.1)),#,yaxis=dict(range=[1800,1900])))
+        xaxis=dict(title='Week', tickvals=[i for i in range(0,len(weekly)+1,1)]),#rangeslider=dict(visible=True,thickness=0.1)),#,yaxis=dict(range=[1800,1900])))
         # xaxis=dict(title='Week', tickvals=[i for i in range(0,len(weekly)+1,1)])
-        xaxis2=dict(visible=False)
+        # xaxis2=dict(visible=False)
         )
     # fig.show()
     return fig
@@ -887,9 +887,11 @@ elif selected=='Dashboard':
             if compUsers:
                 dispScores = scores[scores['Name'].isin(compUsers)]
                 for ind in dispScores.index:
-                    st.write(f'Rank {ind+1}: {dispScores["Name"][ind]} --> {dispScores["Total"][ind]}')
+                    # st.write(f'Rank {ind+1}: {dispScores["Name"][ind]} --> {dispScores["Total"][ind]}')
+                    st.markdown(f"<h1 style='text-align: center; font-size: 16px;'><b>Rank {ind+1}: {dispScores['Name'][ind]} --> {dispScores['Total'][ind]}</b></h1>", unsafe_allow_html=True)
+                    
         with bottomRow[1]:
-            st.download_button('Download User Rankings',scores.to_csv().encode('utf-8'),'Rankings.csv')
+            st.download_button('Download User Rankings',scores.to_csv().encode('utf-8'),'Rankings.csv',use_container_width=True)
         # for n in compUsers.keys():
         #     rank = scores.Name[scores.Name==n].index.to_list()[0]+1
         #     # st.dataframe(scores.loc[scores["Name"]==n,"Total"])
