@@ -319,11 +319,11 @@ def TeamBox(teamTotals):
 
 
 def UserWeeklyCompare(users): #add selector for week ranges
-    # color1={2:'rgb(254,1,1)',1:'rgb(255,179,0)',4:'rgb(0,170,255)',3:'rgb(144,0,255)',0:'rgb(0,145,255)'}
-    # color2={2:'rgb(254,92,92)',1:'rgb(255,206,92)',4:'rgb(92,201,255)',3:'rgb(180,82,255)',0:'rgb(131,201,255)'} #68 transaprency
-    # color2={0:'rgb(254,128,128)',1:'rgb(255,217,128)',2:'rgb(128,212,255)',3:'rgb(200,128,255)'} 75 trasnparency more trasnaprent color
-    color2={0:'rgb(131,201,255)',1:'rgb(0,103,199)',2:'rgb(255,173,173)',3:'rgb(255,77,77)'} #173
-    color1={0:'rgb(51,167,255)',1:'rgb(0,82,158)',2:'rgb(255,128,128)',3:'rgb(255,41,41)'} #darker 112
+    # color2={0:'rgb(131,201,255)',1:'rgb(0,103,199)',2:'rgb(255,173,173)',3:'rgb(255,77,77)'} #173
+    # color1={0:'rgb(51,167,255)',1:'rgb(0,82,158)',2:'rgb(255,128,128)',3:'rgb(255,41,41)'} #darker 112
+    
+    color2={0:'rgb(97,107,250)',1:'rgb(239,85,59)',2:'rgb(0,204,150)',3:'rgb(171,99,250)'}
+    color1={0:'rgb(57,70,249)',1:'rgb(236,52,19)',2:'rgb(0,153,112)',3:'rgb(150,57,249)'}#darker
 
     weekly = pd.DataFrame({user.Name: user.Scores for user in users.values()})
     total = weekly.cumsum()
