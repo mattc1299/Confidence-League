@@ -851,7 +851,7 @@ elif selected=='Dashboard':
         with open('User List.pk1','rb') as f:
             st.session_state.userList = pickle.load(f)
     if 'teamTotals' not in st.session_state:
-        with open('team Totals.pk1','rb') as f:
+        with open('Team Totals.pk1','rb') as f:
             st.session_state.teamTotals = pickle.load(f)
     if name:
         compUsers = {name: st.session_state.userList[name]}
