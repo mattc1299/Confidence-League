@@ -29,9 +29,9 @@ class User:
         self.Data = {}
         self.Scores = {}
         self.Total = 0
-        with open('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Teams.pk1','rb') as f:
+        with open('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Official/Team Totals Zero.pk1','rb') as f:
               self.Teams=pickle.load(f)
-        with open('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Confidences.pk1','rb') as f:
+        with open('C:/Users/Matt/Documents/Python Scripts/Confidence Users/Official/Confidences.pk1','rb') as f:
               self.Confidences=pickle.load(f)
         
     def AddWeek(self, week, data):
@@ -41,28 +41,28 @@ class User:
         data = self.Data.get(week)
         comparison = np.where(data['Winner']==winners['Winner'], data['Confidence'],0)
         self.Scores[week] = int(np.sum(comparison))
-        self.Total=0
-        for score in self.Scores.values():
-            self.Total += score
+        self.Total = sum(self.Scores.values())
+        # self.Total=0 #=sum(scores.values())
+        # for score in self.Scores.values():
+        #     self.Total += score
 
-    def TeamScores(self, WinnerList):
-        self.Teams.iloc[:] = 0
-        self.Confidences.iloc[:] = 0
-        for week,winners in WinnerList.items():
-            data = self.Data.get(week)
-            self.Teams[f'Wk{week}'] = 0
-            for i in range(0,len(data)): #update the numebr of occurences of each confidence for % correct and weekly track team rankings
-                Con = int(data.iloc[i,2])
-                self.Confidences.loc[Con,'Occurrences'] += 1
-                team = data.iloc[i,1] #team assigned confidence
-                self.Teams.loc[team, f'Wk{week}'] = Con
-            Comparison = np.where(data['Winner']==winners['Winner'], data['Confidence'], 0) #gets confidence of each matchup
-            for i in range(0,len(winners)):
-                team = winners.iloc[i,1] #team that won
-                self.Teams.loc[team,['Total']] += Comparison[i]
-                if int(Comparison[i]) in self.Confidences.index: self.Confidences.loc[int(Comparison[i]),'Total'] += Comparison[i]
+    def TeamScores(self, week, winners):
+        data = self.Data.get(week)
+        self.Teams[f'Wk{week}'] = 0
+        for i in range(0,len(data)): #update the number of occurences of each confidence for % correct and weekly track team rankings
+            Con = int(data.iloc[i,1])
+            self.Confidences.loc[Con,'Occurrences'] += 1
+            team = data.iloc[i,0] #team assigned confidence
+            self.Teams.loc[team, f'Wk{week}'] = Con
+        Comparison = np.where(data['Winner']==winners['Winner'], data['Confidence'], 0) #gets confidence of each matchup
+        for i in range(0,len(winners)):
+            team = winners.iloc[i,0] #team that won
+            self.Teams.loc[team,['Total']] += Comparison[i]
+            if int(Comparison[i]) in self.Confidences.index: self.Confidences.loc[int(Comparison[i]),'Total'] += Comparison[i]
+        #need to handel 0/0 nan result
         self.Confidences['Correct'] = round(self.Confidences['Total'] / (self.Confidences['Occurrences'] * self.Confidences.index),2)
-        hold = self.Teams[self.Teams.columns[2:]]
+        self.Confidences.fillna(value=0, inplace=True)
+        hold = self.Teams[self.Teams.columns[3:]]
         self.Teams['Average'] = round(hold.mean(axis=1), 2)
 
 @st.cache_resource

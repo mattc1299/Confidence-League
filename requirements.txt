@@ -5,3 +5,7 @@ streamlit_option_menu==0.3.2
 streamlit_modal==0.1.2
 google_cloud_storage==2.16.0
 google_auth==2.29.0
+plotly_express
+plotly_graph_objects
+pytz
+datetime
