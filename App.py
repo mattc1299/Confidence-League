@@ -836,7 +836,7 @@ elif selected=='History':
     if 'histData' in st.session_state:
         st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>{st.session_state.dispName} Week {st.session_state.dispWeek} Selections</h1>", unsafe_allow_html=True)
         # st.session_state.histData.set_index('Matchup', inplace=True)
-        histDisp = st.session_state.histData.reset_index()
+        histDisp = st.session_state.histData.copy()#reset_index(drop=True)
         histDisp[['Winner','Confidence']] = histDisp[['Winner','Confidence']].astype(str)
         histDisp1 = histDisp.head(8)
         histDisp2 = histDisp.tail(-8)
