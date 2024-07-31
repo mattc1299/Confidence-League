@@ -84,7 +84,7 @@ def establishInputs(today):
     # today=date.today()
     # startDate = date(2024,7,1,)
     # week=(today-startDate).days//7
-    week=1
+    week=2
     seasonWeeks=[]
     for i in range(1,week):
         seasonWeeks.append(i)
