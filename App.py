@@ -844,9 +844,9 @@ elif selected=='History':
         # histDisp2 = st.session_state.histData.tail(-8)
         col1,col2=st.columns([1,1])
         with col1:
-            st.dataframe(histDisp1, hide_index=True, use_container_width=True)
+            st.dataframe(histDisp1, hide_index=False, use_container_width=True)
         with col2:
-            st.dataframe(histDisp2, hide_index=True, use_container_width=True)
+            st.dataframe(histDisp2, hide_index=False, use_container_width=True)
     else:
         st.markdown("<h1 style='text-align: center; font-size: 30px;'>Enter information in the sidebar to view selections.</h1>", unsafe_allow_html=True)
 
