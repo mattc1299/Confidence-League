@@ -84,7 +84,7 @@ def establishInputs(today):
     # today=date.today()
     # startDate = date(2024,7,1,)
     # week=(today-startDate).days//7
-    week=3
+    week=4
     seasonWeeks=[]
     for i in range(1,week):
         seasonWeeks.append(i)
@@ -347,6 +347,7 @@ def UserWeeklyCompare(users): #add selector for week ranges
         )
     fig.update_layout(title_text='<b>Weekly Score Comparison</b>', legend=dict(orientation="h",yanchor='bottom',y=1,xanchor='right',x=.9))
     ymax = math.ceil(total.max().max()/100)*100 #max takes max of each column and returns array, second max takes max of array
+    if ymax==0: ymax=10 #so no error if main user has no score
     fig.update_layout(
         yaxis=dict(title='Weekly Score', range=[0,201], gridcolor='grey'),
         yaxis2=dict(overlaying='y', side='right', title='Total Score', range=[0,ymax], tickvals=[i for i in range(0, ymax+1, int(ymax/4))], showgrid=False),
