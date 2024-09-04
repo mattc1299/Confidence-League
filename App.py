@@ -70,7 +70,7 @@ def loadBucket():
     credentials = service_account.Credentials.from_service_account_info(st.secrets)
     storage_client = storage.Client(project=st.secrets['project_id'], credentials=credentials)
     # bucket = storage_client.bucket('current-selections')
-    bucket = storage_client.bucket('confidence-beta-1')
+    bucket = storage_client.bucket('current-selections')
     return bucket
 # st.session_state.weekSubmissions = list(bucket.list_blobs())
 
@@ -81,10 +81,12 @@ def getBlob(name,week):
 
 @st.cache_data
 def establishInputs(today):
-    # today=date.today()
-    # startDate = date(2024,7,1,)
-    # week=(today-startDate).days//7
-    week=4
+    today=date.today()
+    startDate = date(2024,9,5,)
+    if (today-startDate).days<0:
+        week=1
+    else:
+      week=(today-startDate).days//7
     seasonWeeks=[]
     for i in range(1,week):
         seasonWeeks.append(i)
@@ -228,7 +230,7 @@ def TeamTotals(teamTotals):
     fig.update_layout(boxmode='group',
         yaxis=dict(title='Total',gridcolor='gray',range=[0,ymax+1]),#,tickvals=[i for i in range(0, ymax+1, int(ymax/5))]),
         xaxis=dict(title='Team',tickangle=45))
-    fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=12), showarrow=False)
+    # fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=12), showarrow=False)
     # fig.show()
     return fig
 
@@ -312,7 +314,7 @@ def TeamBox(teamTotals):
         legend=dict(orientation="v"),
         yaxis=dict(title_text='Confidence',range=[0,16.2], tickvals=[i for i in range(0,17,2)]),
         xaxis=dict(title_text='Team',tickangle=45))
-    fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
+    # fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
     # fig.update_yaxes(title_text='Confidence',range=[0,16], tickvals=[i for i in range(0,17,2)])
     # fig.update_xaxes(title_text='Team')
     # fig.show()
@@ -438,7 +440,7 @@ def UserTeamTotals(user):
     fig.update_layout(title_text='<b>Points Scored Per Team</b>', boxmode='group',
         yaxis=dict(title='Total',gridcolor='gray',range=[0,ymax+1]),#,tickvals=[i for i in range(0, ymax+1, int(ymax/5))]),
         xaxis=dict(title='Team',tickangle=45))
-    fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
+    # fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
     return fig
 
 
@@ -553,7 +555,7 @@ def UserBox(user, teams=None):
         legend=dict(orientation="v"),
         yaxis=dict(title_text='Confidence',range=[0,16.2], tickvals=[i for i in range(0,17,2)]),
         xaxis=dict(title_text='Team',tickangle=45))
-    fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
+    # fig.add_annotation(xref='paper',yref='paper',x=.6,y=1.28,text='Division:',font=dict(size=14), showarrow=False)
     # fig.update_yaxes(title_text='Confidence',range=[0,16], tickvals=[i for i in range(0,17,2)])
     # fig.update_xaxes(title_text='Team')
     # fig.show()
@@ -789,13 +791,13 @@ if selected == 'Selections':
             modalMessage='Please make all selections before submitting.'
         else:
             if int(code)==users[name]:
-                # if CheckTime(datetime.now(pytz.timezone('US/Central'))):
-                #     blob = getBlob(name, week)
-                #     with blob.open('w') as f:
-                #         f.write(data.to_csv(index=True))
-                #     modalMessage='Submission Successful!'
-                # else:
-                #     modalMessage='Invalid Submission: submission window is Tuesday 12:01am - Thursday 5:00pm Central'
+                if CheckTime(datetime.now(pytz.timezone('US/Central'))):
+                    blob = getBlob(name, week)
+                    with blob.open('w') as f:
+                        f.write(data.to_csv(index=True))
+                    modalMessage='Submission Successful!'
+                else:
+                    modalMessage='Invalid Submission: submission window is Tuesday 12:01am - Thursday 5:00pm Central'
                 blob = getBlob(name, week)
                 with blob.open('w') as f:
                     f.write(data.to_csv(index=True))
