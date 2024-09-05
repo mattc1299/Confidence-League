@@ -111,7 +111,7 @@ def CheckTime(currentTime):
     dayOfWeek = currentTime.weekday()
     if dayOfWeek in [1,2,3]:
         if dayOfWeek == 3:
-            if currentTime.hour <= 17:
+            if currentTime.hour <= 18:
                 return True
             else:
                 return False
