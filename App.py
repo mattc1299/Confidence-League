@@ -82,7 +82,7 @@ def getBlob(name,week):
 @st.cache_data
 def establishInputs(today):
     today=date.today()
-    startDate = date(2024,9,5,)
+    startDate = date(2024,9,3,)
     if (today-startDate).days<0:
         week=1
     else:
