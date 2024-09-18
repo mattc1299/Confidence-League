@@ -74,7 +74,7 @@ def loadBucket():
     return bucket
 # st.session_state.weekSubmissions = list(bucket.list_blobs())
 
-@st.cache_resource
+#@st.cache_resource
 def getBlob(name,week):
     bucket = loadBucket()
     return bucket.blob(f'Wk{week}/{name} Wk{week}.csv')
@@ -126,8 +126,8 @@ def UserLeader(userList):
     scores = pd.DataFrame(data, columns=['Name','Total'])
     scores = scores.sort_values(by=['Total'], ascending=True)
     plotScores = scores.tail(5)
-    xmin = plotScores['Total'].min()-20
-    xmax = plotScores['Total'].max()+20
+    xmin = plotScores['Total'].min()-10
+    xmax = plotScores['Total'].max()+10
     fig = px.bar(plotScores,x='Total',y='Name',orientation='h',title='<b>User Leaderboard</b>',text='Total')
     fig.update_traces(textposition='outside', hovertemplate='<b>%{y}</b><br>Total: %{x}<br><extra></extra>')
     fig.update_layout(xaxis_range=[xmin,xmax])
@@ -840,7 +840,8 @@ elif selected=='History':
         st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>{st.session_state.dispName} Week {st.session_state.dispWeek} Selections</h1>", unsafe_allow_html=True)
         # st.session_state.histData.set_index('Matchup', inplace=True)
         histDisp = st.session_state.histData.copy()#reset_index(drop=True)
-        histDisp[['Winner','Confidence']] = histDisp[['Winner','Confidence']].astype(str)
+        if len(histDisp.columns)==2: histDisp.reset_index(inplace=True)
+        histDisp[['Matchup','Winner','Confidence']] = histDisp[['Matchup','Winner','Confidence']].astype(str)
         histDisp1 = histDisp.head(8)
         histDisp2 = histDisp.tail(-8)
         # histDisp1 = st.session_state.histData.head(8)
