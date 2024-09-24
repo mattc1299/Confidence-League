@@ -833,6 +833,12 @@ elif selected=='History':
                     st.session_state.userList = pickle.load(f)
             viewUser = st.session_state.userList[histName]
             st.session_state.histData = viewUser.Data.get(histWeek)
+            try:
+                blob = getBlob('Winners', histWeek)
+                with blob.open('r') as f:
+                    st.session_state.histWin = pd.read_csv(f)
+            except:
+                st.session_state.histWin=0
         st.session_state.dispName = histName #so displayed data doesnt change when sidebar state updated
         st.session_state.dispWeek = histWeek
         
@@ -851,6 +857,20 @@ elif selected=='History':
             st.dataframe(histDisp1, hide_index=True, use_container_width=True)
         with col2:
             st.dataframe(histDisp2, hide_index=True, use_container_width=True)
+        if 'histWin' in st.session_state and len(st.session_state.histWin)>1:
+            st.markdown(f"<h1 style='text-align: center; font-size: 50px;'>Week {st.session_state.dispWeek} Winners</h1>", unsafe_allow_html=True)
+            histWin=st.session_state.histWin.copy()
+            histWin[['Matchup','Winner']] = histWin[['Matchup','Winner']].astype(str)
+            histWin1 = histWin.head(8)
+            histWin2 = histWin.tail(-8)
+            # histDisp1 = st.session_state.histData.head(8)
+            # histDisp2 = st.session_state.histData.tail(-8)
+            col1,col2=st.columns([1,1])
+            with col1:
+                st.dataframe(histWin1, hide_index=True, use_container_width=True)
+            with col2:
+                st.dataframe(histWin2, hide_index=True, use_container_width=True)
+        
     else:
         st.markdown("<h1 style='text-align: center; font-size: 30px;'>Enter information in the sidebar to view selections.</h1>", unsafe_allow_html=True)
 
